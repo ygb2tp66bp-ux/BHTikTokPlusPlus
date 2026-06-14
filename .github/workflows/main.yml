@@ -1,34 +1,38 @@
-name: Create BHTikTokPlusPlus app
+name: Create BHTikTokPlusPlus
 
 on:
   workflow_dispatch:
     inputs:
       decrypted_ipa_url:
-        description: 'Direct link to decrypted TikTok IPA'
+        description: 'Direct URL to decrypted TikTok IPA'
         required: true
-      version:
-        description: 'Version name (optional)'
+      tweaks:
+        description: 'Tweaks to enable (leave empty for all)'
         required: false
-        default: 'latest'
+        default: ''
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download decrypted IPA
+      - name: Download Decrypted IPA
         run: |
-          curl -L -o TikTok.ipa "${{ inputs.decrypted_ipa_url }}"
+          curl -L "${{ inputs.decrypted_ipa_url }}" -o TikTok.ipa
 
-      - name: Build Tweaks
+      - name: Install Theos
         run: |
-          # Tutaj będzie logika budowania (zależnie od repo)
-          echo "Build started..."
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
 
-      - name: Upload Artifact
+      - name: Build Tweak
+        run: |
+          make package
+
+      - name: Upload BHTikTokPlusPlus IPA
         uses: actions/upload-artifact@v4
         with:
           name: BHTikTokPlusPlus
           path: "*.ipa"
+          retention-days: 7
